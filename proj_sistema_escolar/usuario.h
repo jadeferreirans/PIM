@@ -2,13 +2,11 @@
 
 #define MAX_STR 100
 
-typedef struct
-{
-	int id;
-	int tipo; // 1 = Admin; 2 = Professor; 3 = Aluno; 
-	char nome[MAX_STR];
-	char username[MAX_STR];
-	char senha[MAX_STR];
+typedef struct {
+    int id;
+    int tipo; //1 - admin; 2 - professor;  3 - aluno;
+    char username[100];
+    char senha[100];
 } Usuario;
 
 /*Funcoes que serao implementadas no usuario.c
@@ -18,5 +16,9 @@ int login(Usuario *u); //funcao chamada ao iniciar o programa
 void alterar_senha(Usuario *usuario_atual);
 
 int gerar_id(); //deve ser acessado somente pelo admin
-void cadastrar_usuario(); //deve ser acessado somente pelo admin
+void cadastrar_usuario_old(); //deve ser acessado somente pelo admin
+void cadastrar_usuario();
+void editar_usuario();
+void excluir_usuario();
+void consultar_usuario();
 

@@ -3,10 +3,18 @@
 #include <stdlib.h>
 
 #include "usuario.h"
+#include "disciplina.h"
+#include "professor.h"
+#include "aluno.h"
+#include "notas.h"
 
 // Protótipos dos menus
 void menu_admin(Usuario usuario_atual);
+void menu_usuarios();
+void menu_disciplinas();
 void menu_professor(Usuario usuario_atual);
+void menu_dados_professor(Usuario usuario_atual);
+void menu_disciplinas_professor(Usuario usuario_atual);
 void menu_aluno(Usuario usuario_atual);
 
 int main()
@@ -31,7 +39,7 @@ int main()
         
 		if (login(&usuario_atual))
 		{
-			printf("\nBem-vindo, %s!\n", usuario_atual.nome);
+			printf("\nBem-vindo, %s!\n", usuario_atual.username);
     	
     		switch (usuario_atual.tipo)//seleciona o menu a ser exibido com base no tipo logado
     		{
@@ -60,14 +68,9 @@ void menu_admin(Usuario usuario_atual)
 
     do {
         printf("\n=== MENU ADMINISTRADOR ===\n");
-        printf("1 - Incluir Usuario\n");
-        printf("2 - Editar Usuario\n");
-        printf("3 - Excluir Usuario\n");
-        printf("4 - Consultar Usuario\n");
-        printf("5 - Incluir Disciplina\n");
-        printf("6 - Editar Disciplina\n");
-        printf("7 - Excluir Disciplina\n");
-        printf("8 - Gerenciamento de Senhas\n");
+        printf("1 - Gerenciamento de Usuarios\n");
+        printf("2 - Gerenciamento de Disciplinas\n");
+        printf("3 - Alterar minha senha\n");
         printf("0 - Logout\n");
         printf("\nEscolha: ");
 
@@ -76,15 +79,70 @@ void menu_admin(Usuario usuario_atual)
 
         switch(opcao)
         {
-            case 1: cadastrar_usuario(); break;
-            case 2: /* editar_usuario(); */ break;
-            case 3: /* excluir_usuario(); */ break;
-            case 4: /* consultar_usuario(); */ break;
-            case 5: /* cadastrar_disciplina(); */ break;
-            case 6: /* editar_disciplina(); */ break;
-            case 7: /* excluir_disciplina(); */ break;
-            case 8: alterar_senha(&usuario_atual); break;
+            case 1: menu_usuarios(); break;
+            case 2: menu_disciplinas(); break;
+            case 3: alterar_senha(&usuario_atual); break;
             case 0: printf("Logout...\n"); break;
+            default: printf("Opção invalida!\n");
+        }
+
+    } while (opcao != 0);
+}
+
+void menu_usuarios()
+{
+	char opcao_str[8];
+    int opcao;
+
+    do {
+        printf("\n=== MENU USUARIOS ===\n");
+		printf("1 - Cadastrar Usuario\n");
+        printf("2 - Editar Usuario\n");
+        printf("3 - Excluir Usuario\n");
+        printf("4 - Consultar Usuario\n");
+        printf("0 - Voltar\n");
+        printf("\nEscolha: ");
+
+        fgets(opcao_str, sizeof(opcao_str), stdin);
+        opcao = atoi(opcao_str);
+
+        switch(opcao)
+        {
+            case 1: cadastrar_usuario(); break;
+            case 2: editar_usuario(); break;
+            case 3: excluir_usuario(); break;
+            case 4: consultar_usuario(); break;
+            case 0: printf("\n"); break;
+            default: printf("Opção invalida!\n");
+        }
+
+    } while (opcao != 0);
+}
+
+void menu_disciplinas()
+{
+	char opcao_str[8];
+    int opcao;
+
+    do {
+        printf("\n=== MENU DISCIPLINAS ===\n");
+		printf("1 - Listar Disciplinas\n");
+        printf("2 - Cadastrar Disciplina\n");
+        printf("3 - Editar Disciplina\n");
+        printf("4 - Excluir Disciplina\n");
+        printf("0 - Voltar\n");
+        printf("\nEscolha: ");
+
+        fgets(opcao_str, sizeof(opcao_str), stdin);
+        opcao = atoi(opcao_str);
+
+        switch(opcao)
+        {
+            case 1: listar_disciplinas(); break;
+            case 2: cadastrar_disciplina(); break;
+            case 3: editar_disciplina(); break;
+            case 4: excluir_disciplina(); break;
+            case 0: printf("\n"); break;
             default: printf("Opção invalida!\n");
         }
 
@@ -98,13 +156,8 @@ void menu_professor(Usuario usuario_atual)
 
     do {
         printf("\n=== MENU PROFESSOR ===\n");
-        printf("1 - Consultar Disciplina\n");
-        printf("2 - Incluir Notas\n");
-        printf("3 - Editar Notas\n");
-        printf("4 - Incluir Faltas\n");
-        printf("5 - Editar Faltas\n");
-        printf("6 - Emitir Relatorio\n");
-        printf("7 - Alterar minha Senha\n");
+        printf("1 - Gerenciamento de Disciplinas\n");
+        printf("2 - Gerenciamento de Dados Pessoais\n");
         printf("0 - Logout\n");
         printf("\nEscolha: ");
 
@@ -113,14 +166,67 @@ void menu_professor(Usuario usuario_atual)
 
         switch(opcao)
         {
-            case 1: /* listar_disciplinas(); */ break;
-            case 2: /* lancar_nota(); */ break;
-            case 3: /* editar_nota(); */ break;
-            case 4: /* lancar_falta(); */ break;
-            case 5: /* editar_falta(); */ break;
-            case 6: /* emitir_relatorio(); */ break;
-            case 7: alterar_senha(&usuario_atual); break;
+            case 1: menu_disciplinas_professor(usuario_atual); break;
+            case 2: menu_dados_professor(usuario_atual); break;
             case 0: printf("Logout...\n"); break;
+            default: printf("Opção invalida!\n");
+        }
+    } while (opcao != 0);
+}
+
+void menu_disciplinas_professor(Usuario usuario_atual)
+{
+    char opcao_str[8];
+    int opcao;
+
+    do {
+        printf("\n=== MENU DISCIPLINAS ===\n");
+        printf("1 - Listar minhas disciplinas\n");
+        printf("2 - Incluir Notas\n");
+        printf("3 - Editar Notas\n");
+        printf("4 - Incluir Faltas\n");
+        printf("5 - Editar Faltas\n");
+        printf("0 - Voltar\n");
+        printf("\nEscolha: ");
+
+        fgets(opcao_str, sizeof(opcao_str), stdin);
+        opcao = atoi(opcao_str);
+
+        switch(opcao)
+        {
+            case 1: listar_disciplinas_professor(usuario_atual.id); break;
+            case 2: lancar_nota(); break;
+            case 3: editar_nota(); break;
+            case 4: lancar_falta(); break;
+            case 5: editar_falta(); break;
+            case 0: printf("\n"); break;
+            default: printf("Opção invalida!\n");
+        }
+    } while (opcao != 0);
+}
+
+void menu_dados_professor(Usuario usuario_atual)
+{
+    char opcao_str[8];
+    int opcao;
+
+    do {
+        printf("\n=== MENU DADOS PESSOAIS ===\n");
+        printf("1 - Exibir meus dados\n");
+        printf("2 - Alterar meus dados\n");
+        printf("3 - Alterar minha Senha\n");
+        printf("0 - Voltar\n");
+        printf("\nEscolha: ");
+
+        fgets(opcao_str, sizeof(opcao_str), stdin);
+        opcao = atoi(opcao_str);
+
+        switch(opcao)
+        {
+            case 1: consultar_professor(usuario_atual.id); break;
+            case 2: editar_professor(usuario_atual.id); break;
+            case 3: alterar_senha(&usuario_atual); break;
+            case 0: printf("\n"); break;
             default: printf("Opção invalida!\n");
         }
     } while (opcao != 0);
@@ -136,7 +242,8 @@ void menu_aluno(Usuario usuario_atual)
         printf("1 - Consultar Frequencia\n");
         printf("2 - Consultar Notas\n");
         printf("3 - Consultar Dados Pessoais\n");
-        printf("4 - Alterar minha Senha\n");
+        printf("4 - Editar Dados Pessoais\n");
+        printf("5 - Alterar minha Senha\n");
         printf("0 - Logout\n");
         printf("\nEscolha: ");
 
@@ -145,10 +252,11 @@ void menu_aluno(Usuario usuario_atual)
 
         switch(opcao)
         {
-            case 1: /* consultar_frequencia(usuario_atual.id); */ break;
-            case 2: /* consultar_notas(usuario_atual.id); */ break;
-            case 3: /* mostrar_dados_pessoais(usuario_atual); */ break;
-            case 4: alterar_senha(&usuario_atual); break;
+            case 1: consultar_faltas_aluno(usuario_atual.id); break;
+            case 2: consultar_notas_aluno(usuario_atual.id); break;
+            case 3: consultar_aluno(usuario_atual.id); break;
+            case 4: editar_aluno(usuario_atual.id); break;
+            case 5: alterar_senha(&usuario_atual); break;
             case 0: printf("Logout...\n"); break;
             default: printf("Opção invalida!\n");
         }
