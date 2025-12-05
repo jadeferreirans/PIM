@@ -1,8 +1,1 @@
-<<<<<<< HEAD
-2;Professor de Oliveira;98765432100;professor@email.com;11977776666
-=======
-4;Flavio;flavio123@gmail.com;1234123
-5;Cordeiro;Cordeiro123@gmail.com;3463349
-6;Pedro;Pedro123@gmail.com;3423423
-7;Egydio;Egydio123@gmail.com;2357996
->>>>>>> 9ccbac71b5fa3dcb587d1d68cc38b45c48c48510
+2;Maria Oliveira;98765432100;maria@gmail.com;11977776666

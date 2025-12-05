@@ -1,8 +1,1 @@
-<<<<<<< HEAD
-3;Aluno da Silva;12345678900;aluno@email.com;11988887777;Engenharia
-=======
-8;Luan;123124;Luan123@gmail.com;12314123;Engenharia
-9;Guilherme;123124;Guilherme123@gmail.com;12314123;Engenharia
-10;Beatriz;123124;Beatriz123@gmail.com;12314123;Engenharia
-11;Jade;123124;Jade123@gmail.com;12314123;Engenharia
->>>>>>> 9ccbac71b5fa3dcb587d1d68cc38b45c48c48510
+3;Joao da Silva;12345678900;joao@gmail.com;11988887777;Engenharia

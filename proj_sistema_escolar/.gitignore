@@ -1,0 +1,16 @@
+# Arquivos de build C
+*.o
+*.exe
+
+# Arquivos de projeto do Dev-C++
+*.dev
+*.layout
+
+# Cache Python
+__pycache__/
+*.pyc
+
+# Arquivos temporários
+*.tmp
+*.bak
+*.log
