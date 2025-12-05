@@ -3,7 +3,7 @@ from defs import notas, faltas, dados_al, dados_prof, disciplinas
 
 usuario_logado = None
 logout_func = None
-
+print(dados_al)
 def set_user(user):
     global usuario_logado
     usuario_logado = user
@@ -37,19 +37,19 @@ def montar_tela_dados(frame):
         widget.destroy()
   
     frame.configure(bg="#003366")
-    id_prof = usuario_logado["id"]
+    id_aluno = usuario_logado["id"]
 
     # Pega os dados do professor do dicionário global
-    prof = dados_prof.get(id_prof)
+    aluno = dados_al.get(id_aluno)
     tk.Label(frame, text="Seus dados", font=("Arial Black", 22), fg="white", bg="#003366").pack(pady=30)
     
-    if prof:
-        tk.Label(frame, text=f"Nome Completo: {prof['Nome Completo']}", font=("Segoe UI", 16), fg="white", bg="#003366").pack(pady=1)
-        tk.Label(frame, text=f"ID: {id_prof}", font=("Segoe UI", 16), fg="white", bg="#003366").pack(pady=1)
-        tk.Label(frame, text=f"CPF: {prof['CPF']}", font=("Segoe UI", 16), fg="white", bg="#003366").pack(pady=1)
-        tk.Label(frame, text=f"Email: {prof['Email']}", font=("Segoe UI", 16), fg="white", bg="#003366").pack(pady=1)
-        tk.Label(frame, text=f"Telefone: {prof['Telefone']}", font=("Segoe UI", 16), fg="white", bg="#003366").pack(pady=1)
-        tk.Label(frame, text=f"Curso: {prof['Curso']}", font=("Segoe UI", 16), fg="white", bg="#003366").pack(pady=1)
+    if aluno:
+        tk.Label(frame, text=f"Nome Completo: {aluno['Nome Completo']}", font=("Segoe UI", 16), fg="white", bg="#003366").pack(pady=1)
+        tk.Label(frame, text=f"ID: {id_aluno}", font=("Segoe UI", 16), fg="white", bg="#003366").pack(pady=1)
+        tk.Label(frame, text=f"CPF: {aluno['CPF']}", font=("Segoe UI", 16), fg="white", bg="#003366").pack(pady=1)
+        tk.Label(frame, text=f"Email: {aluno['Email']}", font=("Segoe UI", 16), fg="white", bg="#003366").pack(pady=1)
+        tk.Label(frame, text=f"Telefone: {aluno['Telefone']}", font=("Segoe UI", 16), fg="white", bg="#003366").pack(pady=1)
+        tk.Label(frame, text=f"Curso: {aluno['Curso']}", font=("Segoe UI", 16), fg="white", bg="#003366").pack(pady=1)
     else:
         tk.Label(frame, text="Dados não encontrados.", font=("Segoe UI", 16), fg="white", bg="#003366").pack(pady=20)
 
@@ -83,6 +83,7 @@ def montar_tela_faltas(frame):
 
 
 def montar_tela_notas(frame):
+    print(dados_al)
     for widget in frame.winfo_children():
         widget.destroy()
 
