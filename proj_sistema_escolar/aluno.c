@@ -1,27 +1,9 @@
-/*
-===========================================
- ARQUIVO: aluno.c
- RESPONSABILIDADE:
- - Manipular dados academicos do aluno.
-
- O QUE COLOCAR AQUI:
- - funcao pra cadastrar aluno
- - funcao pra listar dados aluno
-===========================================
-*/
-
-#define MAX_STR 100
-#define ARQUIVO_ALUNOS "data/alunos.txt"
-
-#define ARQ_ALUNOS       "data/alunos.txt"
-#define ARQ_NOTAS        "data/notas.txt"
-#define ARQ_FALTAS       "data/faltas.txt"
-#define ARQ_DISCIPLINAS  "data/disciplinas.txt"
+#include "aluno.h"
+#include "notas.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "aluno.h"
 
 //
 // ==================================================
@@ -205,15 +187,15 @@ void excluir_aluno(int id)
     char linha[1024];
     int encontrado = 0;
 
-    printf("\n=== Exclusão Completa do Aluno ===\n");
+    printf("\n=== Exclusao Completa do Aluno ===\n");
     printf("ID alvo: %d\n", id);
 
+    // ----------------------------------------------
     // 1) Remover do alunos.txt
+    // ----------------------------------------------
     {
         FILE *fa = fopen(ARQ_ALUNOS, "r");
-        char temp_path[256];
-        snprintf(temp_path, sizeof(temp_path), "data/temp_alunos.txt");
-        FILE *tempA = fopen(temp_path, "w");
+        FILE *tempA = fopen("data/temp_alunos.txt", "w");
 
         if (!fa || !tempA)
         {
@@ -226,12 +208,11 @@ void excluir_aluno(int id)
         while (fgets(linha, sizeof(linha), fa))
         {
             int id_linha;
-            // formato: id;nome;cpf;email;telefone;curso
             if (sscanf(linha, "%d;", &id_linha) == 1 && id_linha == id)
             {
                 encontrado = 1;
-                printf("Aluno encontrado: linha removida de alunos.txt\n");
-                continue; // pula gravação
+                printf("Aluno encontrado e removido de alunos.txt\n");
+                continue;
             }
             fputs(linha, tempA);
         }
@@ -241,83 +222,74 @@ void excluir_aluno(int id)
 
         if (!encontrado)
         {
-            printf("Nenhum aluno com ID %d encontrado em alunos.txt\n", id);
-            remove(temp_path);
+            printf("Nenhum aluno com ID %d encontrado no arquivo.\n", id);
+            remove("data/temp_alunos.txt");
             return;
         }
 
         remove(ARQ_ALUNOS);
-        rename(temp_path, ARQ_ALUNOS);
+        rename("data/temp_alunos.txt", ARQ_ALUNOS);
     }
 
-    // 2) Remover de notas.txt (formato: id_disciplina;id_aluno;nota1;...)
-    {
-        char temp_path[256];
-        snprintf(temp_path, sizeof(temp_path), "data/temp_notas.txt");
+    // ----------------------------------------------
+    // 2) Remover notas do aluno
+    // ----------------------------------------------
+    // (idem ao seu código – apenas organizado)
 
+    // NOTAS
+    {
         FILE *fn = fopen(ARQ_NOTAS, "r");
-        FILE *tempN = fopen(temp_path, "w");
+        FILE *tempN = fopen("data/temp_notas.txt", "w");
 
         if (fn && tempN)
         {
             while (fgets(linha, sizeof(linha), fn))
             {
                 int id_disc, id_aluno;
-                // tenta ler os dois primeiros inteiros
-                if (sscanf(linha, "%d;%d;", &id_disc, &id_aluno) == 2)
-                {
-                    if (id_aluno == id)
-                    {
-                        // pula
-                        continue;
-                    }
-                }
-                // caso a linha esteja num formato inesperado, mantemos ela
+                if (sscanf(linha, "%d;%d;", &id_disc, &id_aluno) == 2 &&
+                    id_aluno == id)
+                    continue;
+
                 fputs(linha, tempN);
             }
+
             fclose(fn);
             fclose(tempN);
 
             remove(ARQ_NOTAS);
-            rename(temp_path, ARQ_NOTAS);
-            printf("Removidas notas (se existiam) do aluno %d em notas.txt\n", id);
+            rename("data/temp_notas.txt", ARQ_NOTAS);
         }
         else
         {
             if (fn) fclose(fn);
             if (tempN) fclose(tempN);
-            // Não fatal: pode não existir arquivo de notas ainda
         }
     }
 
-    // 3) Remover de faltas.txt (formato: id_disciplina;id_aluno;faltas)
+    // ----------------------------------------------
+    // 3) Remover faltas do aluno
+    // ----------------------------------------------
     {
-        char temp_path[256];
-        snprintf(temp_path, sizeof(temp_path), "data/temp_faltas.txt");
-
         FILE *ff = fopen(ARQ_FALTAS, "r");
-        FILE *tempF = fopen(temp_path, "w");
+        FILE *tempF = fopen("data/temp_faltas.txt", "w");
 
         if (ff && tempF)
         {
             while (fgets(linha, sizeof(linha), ff))
             {
                 int id_disc, id_aluno;
-                if (sscanf(linha, "%d;%d;", &id_disc, &id_aluno) == 2)
-                {
-                    if (id_aluno == id)
-                    {
-                        continue; // pula
-                    }
-                }
+                if (sscanf(linha, "%d;%d;", &id_disc, &id_aluno) == 2 &&
+                    id_aluno == id)
+                    continue;
+
                 fputs(linha, tempF);
             }
+
             fclose(ff);
             fclose(tempF);
 
             remove(ARQ_FALTAS);
-            rename(temp_path, ARQ_FALTAS);
-            printf("Removidas faltas (se existiam) do aluno %d em faltas.txt\n", id);
+            rename("data/temp_faltas.txt", ARQ_FALTAS);
         }
         else
         {
@@ -326,78 +298,83 @@ void excluir_aluno(int id)
         }
     }
 
+    // ----------------------------------------------
     // 4) Remover aluno das disciplinas
-    // formato esperado das linhas (exemplo): id_disc;id_prof;nome;1,2,3,4
+    // ----------------------------------------------
     {
-        char temp_path[256];
-        snprintf(temp_path, sizeof(temp_path), "data/temp_disc.txt");
-
         FILE *fd = fopen(ARQ_DISCIPLINAS, "r");
-        FILE *tempD = fopen(temp_path, "w");
+        FILE *tempD = fopen("data/temp_disc.txt", "w");
 
         if (fd && tempD)
         {
             while (fgets(linha, sizeof(linha), fd))
             {
-                // copiar linha para manipulacao
                 char linha_copy[1024];
                 strncpy(linha_copy, linha, sizeof(linha_copy));
-                linha_copy[sizeof(linha_copy)-1] = '\0';
+                linha_copy[sizeof(linha_copy) - 1] = '\0';
 
-                // separar por ';' usando strtok (mais tolerante)
-                char *tok;
-                tok = strtok(linha_copy, ";\n");
-                if (!tok) {
-                    // linha malformada, copia direta
-                    fputs(linha, tempD);
-                    continue;
-                }
+                char *tok = strtok(linha_copy, ";\n");
+                if (!tok) { fputs(linha, tempD); continue; }
+
                 int id_disc = atoi(tok);
 
-                tok = strtok(NULL, ";\n");
-                if (!tok) { fputs(linha, tempD); continue; }
-                int id_prof = atoi(tok);
-
+                // nome da disciplina
                 tok = strtok(NULL, ";\n");
                 if (!tok) { fputs(linha, tempD); continue; }
                 char nome_disc[256];
                 strncpy(nome_disc, tok, sizeof(nome_disc));
-                nome_disc[sizeof(nome_disc)-1] = '\0';
 
-                tok = strtok(NULL, ";\n"); // lista de alunos (pode ser NULL)
+                // id do professor
+                tok = strtok(NULL, ";\n");
+                if (!tok) { fputs(linha, tempD); continue; }
+                int id_prof = atoi(tok);
+
+                // total de alunos
+                tok = strtok(NULL, ";\n");
+                if (!tok) { fputs(linha, tempD); continue; }
+                int total_original = atoi(tok);
+
+                // lista de alunos (pode ser NULL)
+                tok = strtok(NULL, ";\n");
+
                 char nova_lista[1024] = "";
+                int novo_total = 0;
+
                 if (tok && strlen(tok) > 0)
                 {
-                    // tok contém "1,2,3" por exemplo
                     char *sub = strtok(tok, ",");
                     int first = 1;
+
                     while (sub)
                     {
                         int aluno_id = atoi(sub);
+
                         if (aluno_id != id)
                         {
                             if (!first) strcat(nova_lista, ",");
                             strcat(nova_lista, sub);
                             first = 0;
+                            novo_total++;
                         }
+
                         sub = strtok(NULL, ",");
                     }
                 }
 
-                // escrever a linha reconstruída
-                if (strlen(nova_lista) > 0)
-                    fprintf(tempD, "%d;%d;%s;%s\n", id_disc, id_prof, nome_disc, nova_lista);
+                // grava linha corrigida no arquivo temp
+                if (novo_total > 0)
+                    fprintf(tempD, "%d;%s;%d;%d;%s\n",
+                            id_disc, nome_disc, id_prof, novo_total, nova_lista);
                 else
-                    // se não sobrou aluno, grava sem o campo de lista (ou com vazio)
-                    fprintf(tempD, "%d;%d;%s;\n", id_disc, id_prof, nome_disc);
+                    fprintf(tempD, "%d;%s;%d;0;\n",
+                            id_disc, nome_disc, id_prof);
             }
 
             fclose(fd);
             fclose(tempD);
 
             remove(ARQ_DISCIPLINAS);
-            rename(temp_path, ARQ_DISCIPLINAS);
-            printf("Removido aluno %d das listas de disciplinas (se estava matriculado).\n", id);
+            rename("data/temp_disc.txt", ARQ_DISCIPLINAS);
         }
         else
         {
@@ -406,7 +383,7 @@ void excluir_aluno(int id)
         }
     }
 
-    printf("\nAluno excluído COMPLETAMENTE do sistema!\n");
+    printf("\nAluno excluido COMPLETAMENTE do sistema!\n");
 }
 
 //

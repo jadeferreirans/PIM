@@ -1,24 +1,27 @@
+#ifndef USUARIO_H
 #define USUARIO_H
 
 #define MAX_STR 100
 
 typedef struct {
     int id;
-    int tipo; //1 - admin; 2 - professor;  3 - aluno;
-    char username[100];
-    char senha[100];
+    int tipo; // 1 - admin; 2 - professor; 3 - aluno
+    char username[MAX_STR];
+    char senha[MAX_STR];
 } Usuario;
 
-/*Funcoes que serao implementadas no usuario.c
-Funcoes relacionadas a usuario (login, cadastro, edicao, exclusao, consulta)*/
+/*
+ Funções do módulo usuario.c
+*/
 
-int login(Usuario *u); //funcao chamada ao iniciar o programa
+int login(Usuario *u); // chamada ao iniciar o programa
 void alterar_senha(Usuario *usuario_atual);
 
-int gerar_id(); //deve ser acessado somente pelo admin
-void cadastrar_usuario_old(); //deve ser acessado somente pelo admin
+int gerar_id(); 
+void cadastrar_usuario_old();
 void cadastrar_usuario();
 void editar_usuario();
 void excluir_usuario();
 void consultar_usuario();
 
+#endif

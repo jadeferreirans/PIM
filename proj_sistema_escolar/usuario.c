@@ -1,28 +1,30 @@
-/*Funcoes relacionadas a usuario (login, cadastro, edicao, exclusao, consulta)*/
+#include "usuario.h" 
+#include "aluno.h"
+#include "professor.h"
+#include "menus.h"
 
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
-#include "usuario.h"
-#include "aluno.h"
-#include "professor.h"
-
-#define MAX_STR 100
 #define LOCAL_ARQUIVO_USUARIOS "data/usuarios.txt"
 
+
+// =========================================================
+// LOGIN
+// =========================================================
 int login(Usuario *u)
 {
     FILE *f = fopen(LOCAL_ARQUIVO_USUARIOS, "r");
-    if(!f)
+    if (!f)
     {
-        printf("Erro: usuario.txt nao encontrado\n");
+        printf("Erro: usuarios.txt nao encontrado.\n");
         return 0;
     }
 
     char username[MAX_STR], senha[MAX_STR];
 
-    printf("\n=== LOGIN ===\n");
+    printf("\n====== LOGIN ======\n");
 
     printf("Username: ");
     fgets(username, MAX_STR, stdin);
@@ -40,8 +42,8 @@ int login(Usuario *u)
         if (sscanf(linha, "%d;%d;%[^;];%[^;\n]",
                    &temp.id, &temp.tipo, temp.username, temp.senha) == 4)
         {
-            if(strcmp(username, temp.username) == 0 &&
-               strcmp(senha, temp.senha) == 0)
+            if (strcmp(username, temp.username) == 0 &&
+                strcmp(senha, temp.senha) == 0)
             {
                 *u = temp;
                 fclose(f);
@@ -54,6 +56,11 @@ int login(Usuario *u)
     return 0;
 }
 
+
+
+// =========================================================
+// ALTERAR SENHA
+// =========================================================
 void alterar_senha(Usuario *usuario_atual)
 {
     char entrada[MAX_STR], nova_senha[MAX_STR];
@@ -64,7 +71,7 @@ void alterar_senha(Usuario *usuario_atual)
     fgets(entrada, MAX_STR, stdin);
     entrada[strcspn(entrada, "\n")] = '\0';
 
-    if(strcmp(entrada, usuario_atual->senha) != 0)
+    if (strcmp(entrada, usuario_atual->senha) != 0)
     {
         printf("Senha incorreta.\n");
         return;
@@ -73,9 +80,9 @@ void alterar_senha(Usuario *usuario_atual)
     FILE *f = fopen(LOCAL_ARQUIVO_USUARIOS, "r");
     FILE *temp = fopen("temp.txt", "w");
 
-    if(!f || !temp)
+    if (!f || !temp)
     {
-        printf("Erro ao abrir arquivos.\n");
+        printf("Erro ao abrir arquivos de usuarios.\n");
         return;
     }
 
@@ -91,11 +98,11 @@ void alterar_senha(Usuario *usuario_atual)
         sscanf(linha, "%d;%d;%[^;];%[^;\n]",
                &u.id, &u.tipo, u.username, u.senha);
 
-        if(u.id == usuario_atual->id)
+        if (u.id == usuario_atual->id)
         {
             strcpy(u.senha, nova_senha);
             fprintf(temp, "%d;%d;%s;%s\n",
-                u.id, u.tipo, u.username, u.senha);
+                    u.id, u.tipo, u.username, u.senha);
         }
         else
         {
@@ -113,31 +120,39 @@ void alterar_senha(Usuario *usuario_atual)
     printf("\nSenha alterada com sucesso!\n");
 }
 
-int gerar_id()//deve ser acessado somente pelo admin ADICIONAR FORMATACAO NO ID!!!!!
+
+
+// =========================================================
+// GERAR NOVO ID
+// =========================================================
+int gerar_id()
 {
-	FILE *f = fopen(LOCAL_ARQUIVO_USUARIOS, "r");
+    FILE *f = fopen(LOCAL_ARQUIVO_USUARIOS, "r");
     int id, maior_id = 0;
     char linha[300];
-    
-    if(!f)
-	{
-    	printf("Erro: usuario.txt nao encontrado no gerar id\n");
-        return 0;
-	}
 
-    while(fgets(linha, sizeof(linha), f))
-	{
-    	sscanf(linha, "%d;", &id);
-    	if(id > maior_id)
-    	{
-    		maior_id = id;
-		}
-	}
-	
+    if (!f)
+    {
+        printf("Erro: usuarios.txt nao encontrado ao gerar ID.\n");
+        return 0;
+    }
+
+    while (fgets(linha, sizeof(linha), f))
+    {
+        sscanf(linha, "%d;", &id);
+        if (id > maior_id)
+            maior_id = id;
+    }
+
     fclose(f);
     return maior_id + 1;
 }
 
+
+
+// =========================================================
+// CADASTRAR USUARIO
+// =========================================================
 void cadastrar_usuario()
 {
     Usuario novo;
@@ -150,25 +165,22 @@ void cadastrar_usuario()
     fgets(buffer, sizeof(buffer), stdin);
     novo.tipo = atoi(buffer);
 
-    if(novo.tipo < 1 || novo.tipo > 3)
+    if (novo.tipo < 1 || novo.tipo > 3)
     {
         printf("Tipo invalido!\n");
         return;
     }
 
-    // ==== USERNAME ====
     printf("Defina o username: ");
     fgets(novo.username, MAX_STR, stdin);
     novo.username[strcspn(novo.username, "\n")] = '\0';
 
-    // ==== SENHA ====
     printf("Defina a senha: ");
     fgets(novo.senha, MAX_STR, stdin);
     novo.senha[strcspn(novo.senha, "\n")] = '\0';
 
-    // ---- SALVAR apenas dados de login ----
     FILE *f = fopen(LOCAL_ARQUIVO_USUARIOS, "a");
-    if(!f)
+    if (!f)
     {
         printf("Erro ao abrir usuarios.txt!\n");
         return;
@@ -181,13 +193,8 @@ void cadastrar_usuario()
 
     printf("\nUsuario criado com sucesso! (ID: %d)\n", novo.id);
 
-    // ---- CHAMAR MÓDULO ESPECÍFICO ----
-    switch(novo.tipo)
+    switch (novo.tipo)
     {
-        /*case 1:
-            cadastrar_admin(novo.id);
-            break;*/
-
         case 2:
             cadastrar_professor(novo.id);
             break;
@@ -198,6 +205,11 @@ void cadastrar_usuario()
     }
 }
 
+
+
+// =========================================================
+// EDITAR USUARIO
+// =========================================================
 void editar_usuario()
 {
     int id_alvo;
@@ -212,9 +224,9 @@ void editar_usuario()
     FILE *f = fopen(LOCAL_ARQUIVO_USUARIOS, "r");
     FILE *temp = fopen("temp.txt", "w");
 
-    if(!f || !temp)
+    if (!f || !temp)
     {
-        printf("Erro ao abrir arquivos!\n");
+        printf("Erro ao abrir arquivo de usuarios!\n");
         return;
     }
 
@@ -233,22 +245,20 @@ void editar_usuario()
             encontrado = 1;
 
             printf("\n--- Editando Usuario (ID %d) ---\n", u.id);
-            printf("Pressione ENTER para manter o valor atual.\n\n");
+            printf("\nPressione [ENTER] para manter\n\n", u.id);
 
             char input[MAX_STR];
 
-            // ------------------ USERNAME ------------------
             printf("Username atual: %s\nNovo username: ", u.username);
             fgets(input, MAX_STR, stdin);
             input[strcspn(input, "\n")] = '\0';
-            if(strlen(input) > 0)
+            if (strlen(input) > 0)
                 strcpy(u.username, input);
 
-            // ------------------- SENHA --------------------
-            printf("Senha atual: %s\nNova senha: ", u.senha);
+            printf("Alterar senha: ", u.senha);
             fgets(input, MAX_STR, stdin);
             input[strcspn(input, "\n")] = '\0';
-            if(strlen(input) > 0)
+            if (strlen(input) > 0)
                 strcpy(u.senha, input);
 
             fprintf(temp, "%d;%d;%s;%s\n",
@@ -263,7 +273,7 @@ void editar_usuario()
     fclose(f);
     fclose(temp);
 
-    if(!encontrado)
+    if (!encontrado)
     {
         printf("\nUsuario com ID %d nao encontrado!\n", id_alvo);
         remove("temp.txt");
@@ -276,13 +286,18 @@ void editar_usuario()
     printf("\nUsuario atualizado com sucesso!\n");
 }
 
+
+
+// =========================================================
+// EXCLUIR USUARIO
+// =========================================================
 void excluir_usuario()
 {
     int alvo_id;
     char buffer[32];
 
     printf("\n=== Excluir Usuario ===\n");
-    printf("Digite o ID do usuario que deseja excluir: ");
+    printf("Digite o ID do usuario: ");
 
     fgets(buffer, sizeof(buffer), stdin);
     alvo_id = atoi(buffer);
@@ -290,9 +305,9 @@ void excluir_usuario()
     FILE *f = fopen(LOCAL_ARQUIVO_USUARIOS, "r");
     FILE *temp = fopen("temp.txt", "w");
 
-    if(!f || !temp)
+    if (!f || !temp)
     {
-        printf("Erro ao abrir arquivos!\n");
+        printf("Erro ao abrir arquivo de usuarios!\n");
         return;
     }
 
@@ -315,7 +330,7 @@ void excluir_usuario()
 
             char resp[8];
             fgets(resp, sizeof(resp), stdin);
-
+            
             if (resp[0] != 's' && resp[0] != 'S')
             {
                 printf("Operacao cancelada.\n");
@@ -325,8 +340,7 @@ void excluir_usuario()
                 return;
             }
 
-            // Não grava → exclui
-            continue;
+            continue; // Não grava → exclui
         }
 
         fputs(linha, temp);
@@ -335,7 +349,7 @@ void excluir_usuario()
     fclose(f);
     fclose(temp);
 
-    if(!encontrado)
+    if (!encontrado)
     {
         printf("\nNenhum usuario com ID %d encontrado.\n", alvo_id);
         remove("temp.txt");
@@ -344,19 +358,26 @@ void excluir_usuario()
 
     remove(LOCAL_ARQUIVO_USUARIOS);
     rename("temp.txt", LOCAL_ARQUIVO_USUARIOS);
-    
-    switch(u.tipo)
+
+    switch (u.tipo)
     {
-    	case 2:
-    		excluir_professor(alvo_id); break;
-    	
-    	case 3:
-    		excluir_aluno(alvo_id); break;
-	}
+        case 2:
+            excluir_professor(alvo_id);
+            break;
+
+        case 3:
+            excluir_aluno(alvo_id);
+            break;
+    }
 
     printf("\nUsuario excluido com sucesso!\n");
 }
 
+
+
+// =========================================================
+// CONSULTAR USUARIO
+// =========================================================
 void consultar_usuario()
 {
     int alvo_id;
@@ -369,7 +390,7 @@ void consultar_usuario()
     alvo_id = atoi(buffer);
 
     FILE *f = fopen(LOCAL_ARQUIVO_USUARIOS, "r");
-    if(!f)
+    if (!f)
     {
         printf("Erro ao abrir arquivo de usuarios.\n");
         return;
@@ -392,7 +413,7 @@ void consultar_usuario()
             printf("\n=== Dados do Usuario ===\n");
             printf("ID: %d\n", u.id);
 
-            switch(u.tipo)
+            switch (u.tipo)
             {
                 case 1: printf("Tipo: Administrador\n"); break;
                 case 2: printf("Tipo: Professor\n"); break;
@@ -400,19 +421,14 @@ void consultar_usuario()
             }
 
             printf("Username: %s\n", u.username);
-            printf("Senha: %s\n", u.senha);
 
             printf("\n* Dados pessoais estao no modulo especifico. *\n");
-            printf("=========================\n");
-
             break;
         }
     }
 
     fclose(f);
 
-    if(!encontrado)
+    if (!encontrado)
         printf("\nNenhum usuario com ID %d encontrado.\n", alvo_id);
 }
-
-

@@ -1,21 +1,15 @@
-/*
-===========================================
- ARQUIVO: professor.c
- RESPONSABILIDADE:
- - Armazenar dados academicos do professor.
-
- O QUE COLOCAR AQUI:
- - funcao pra cadastrar professor
- - sei la o que mais precisa
-
- Pra lancar notas e faltas usar notas.c
-===========================================
-*/
+#include "professor.h"
 
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "professor.h"
+
+
+//
+// ==================================================
+//  CADASTRAR PROFESSOR
+// ==================================================
+//
 
 void cadastrar_professor(int id_usuario)
 {
@@ -57,10 +51,15 @@ void cadastrar_professor(int id_usuario)
 
 
 
+//
+// ==================================================
+//  CONSULTAR PROFESSOR
+// ==================================================
+//
+
 void consultar_professor(int id)
 {
     FILE *f = fopen(ARQ_PROFESSORES, "r");
-
     if (!f)
     {
         printf("Erro ao abrir arquivo de professores.\n");
@@ -74,8 +73,9 @@ void consultar_professor(int id)
     {
         Professor p;
 
-        sscanf(linha, "%d;%[^;];%[^;];%[^;];%[^\n]",
-               &p.id, p.nome, p.cpf, p.email, p.telefone);
+        if (sscanf(linha, "%d;%[^;];%[^;];%[^;];%[^\n]",
+                   &p.id, p.nome, p.cpf, p.email, p.telefone) != 5)
+            continue;
 
         if (p.id == id)
         {
@@ -101,6 +101,12 @@ void consultar_professor(int id)
 
 
 
+//
+// ==================================================
+//  LISTAR PROFESSORES
+// ==================================================
+//
+
 void listar_professores()
 {
     FILE *f = fopen(ARQ_PROFESSORES, "r");
@@ -117,8 +123,9 @@ void listar_professores()
 
     while (fgets(linha, sizeof(linha), f))
     {
-        sscanf(linha, "%d;%[^;];%[^;];%[^;];%[^\n]",
-               &p.id, p.nome, p.cpf, p.email, p.telefone);
+        if (sscanf(linha, "%d;%[^;];%[^;];%[^;];%[^\n]",
+                   &p.id, p.nome, p.cpf, p.email, p.telefone) != 5)
+            continue;
 
         printf("ID %-4d | %-20s | %s\n", p.id, p.nome, p.email);
     }
@@ -126,14 +133,18 @@ void listar_professores()
     fclose(f);
 }
 
+
+
+//
+// ==================================================
+//  EXCLUIR PROFESSOR
+// ==================================================
+//
+
 void excluir_professor(int id)
 {
-	int encontrado = 0;
-	char linha[512];
-	
-	// -------------------------------------------
-    // 1) Remover do arquivo PROFESSORES
-    // -------------------------------------------
+    int encontrado = 0;
+    char linha[512];
 
     FILE *fp = fopen(ARQ_PROFESSORES, "r");
     FILE *tempP = fopen("temp_prof.txt", "w");
@@ -141,6 +152,8 @@ void excluir_professor(int id)
     if (!fp || !tempP)
     {
         printf("Erro abrindo arquivos de professores.\n");
+        if (fp) fclose(fp);
+        if (tempP) fclose(tempP);
         return;
     }
 
@@ -148,15 +161,16 @@ void excluir_professor(int id)
     {
         Professor p;
 
-        sscanf(linha, "%d;%[^;];%[^;];%[^;];%[^\n]",
-               &p.id, p.nome, p.cpf, p.email, p.telefone);
+        if (sscanf(linha, "%d;%[^;];%[^;];%[^;];%[^\n]",
+                   &p.id, p.nome, p.cpf, p.email, p.telefone) != 5)
+            continue;
 
         if (p.id == id)
         {
             encontrado = 1;
             printf("Professor encontrado: %s\n", p.nome);
             printf("Removendo registro de professores...\n");
-            continue; // NÃO escrever no temporário
+            continue; // NÃO grava no arquivo temporário
         }
 
         fputs(linha, tempP);
@@ -167,16 +181,24 @@ void excluir_professor(int id)
 
     if (!encontrado)
     {
-        printf("Nenhum professor com ID %d encontrado no arquivo de professores.\n", id);
+        printf("Nenhum professor com ID %d encontrado.\n", id);
         remove("temp_prof.txt");
         return;
     }
 
-    // Aplicar a remoção no arquivo final
     remove(ARQ_PROFESSORES);
     rename("temp_prof.txt", ARQ_PROFESSORES);
-    
+
+    printf("\nProfessor excluido com sucesso!\n");
 }
+
+
+
+//
+// ==================================================
+//  EDITAR PROFESSOR
+// ==================================================
+//
 
 void editar_professor(int id)
 {
@@ -186,6 +208,8 @@ void editar_professor(int id)
     if (!f || !temp)
     {
         printf("Erro ao abrir arquivos de professores.\n");
+        if (f) fclose(f);
+        if (temp) fclose(temp);
         return;
     }
 
@@ -197,8 +221,12 @@ void editar_professor(int id)
         Professor p;
         char input[MAX_STR];
 
-        sscanf(linha, "%d;%[^;];%[^;];%[^;];%[^\n]",
-               &p.id, p.nome, p.cpf, p.email, p.telefone);
+        if (sscanf(linha, "%d;%[^;];%[^;];%[^;];%[^\n]",
+                   &p.id, p.nome, p.cpf, p.email, p.telefone) != 5)
+        {
+            fputs(linha, temp);
+            continue;
+        }
 
         if (p.id == id)
         {
@@ -207,41 +235,35 @@ void editar_professor(int id)
             printf("\n=== Editando Professor (ID %d) ===\n", p.id);
             printf("Pressione ENTER para manter o valor atual.\n\n");
 
-            // ----------- NOME -----------
+            // Nome
             printf("Nome atual: %s\nNovo nome: ", p.nome);
             fgets(input, MAX_STR, stdin);
             input[strcspn(input, "\n")] = '\0';
-            if (strlen(input) > 0)
-                strcpy(p.nome, input);
+            if (strlen(input) > 0) strcpy(p.nome, input);
 
-            // ----------- CPF -----------
+            // CPF
             printf("CPF atual: %s\nNovo CPF: ", p.cpf);
             fgets(input, MAX_STR, stdin);
             input[strcspn(input, "\n")] = '\0';
-            if (strlen(input) > 0)
-                strcpy(p.cpf, input);
+            if (strlen(input) > 0) strcpy(p.cpf, input);
 
-            // ----------- EMAIL -----------
+            // Email
             printf("Email atual: %s\nNovo email: ", p.email);
             fgets(input, MAX_STR, stdin);
             input[strcspn(input, "\n")] = '\0';
-            if (strlen(input) > 0)
-                strcpy(p.email, input);
+            if (strlen(input) > 0) strcpy(p.email, input);
 
-            // ----------- TELEFONE -----------
+            // Telefone
             printf("Telefone atual: %s\nNovo telefone: ", p.telefone);
             fgets(input, MAX_STR, stdin);
             input[strcspn(input, "\n")] = '\0';
-            if (strlen(input) > 0)
-                strcpy(p.telefone, input);
+            if (strlen(input) > 0) strcpy(p.telefone, input);
 
-            // GRAVAR ATUALIZADO
             fprintf(temp, "%d;%s;%s;%s;%s\n",
                     p.id, p.nome, p.cpf, p.email, p.telefone);
         }
         else
         {
-            // Copia linha original
             fputs(linha, temp);
         }
     }

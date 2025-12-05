@@ -1,26 +1,17 @@
-/*
-===========================================
- ARQUIVO: notas.c
- RESPONSABILIDADE:
- - Registrar e modificar notas e faltas.
-
- O QUE VAI COLOCAR AQUI:
- - Lancamento e edicao de notas
- - Lancamento e edicao de faltas
- - Consultar notas e faltas para aluno ou professor
-===========================================
-*/
+#include "notas.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "notas.h"
 
 //
-// =====================  FUNÇÕES DE NOTAS  =====================
+// ==================================================
+//  CARREGAR NOTAS DE UM ALUNO
+// ==================================================
 //
 
-int carregar_notas(int id_disc, int id_aluno, float notas[4]) {
+int carregar_notas(int id_disc, int id_aluno, float notas[4])
+{
     FILE *f = fopen(ARQ_NOTAS, "r");
     if (!f) return 0;
 
@@ -28,11 +19,13 @@ int carregar_notas(int id_disc, int id_aluno, float notas[4]) {
     int d, a;
     float n1, n2, n3, n4;
 
-    while (fgets(linha, sizeof(linha), f)) {
+    while (fgets(linha, sizeof(linha), f))
+    {
         if (sscanf(linha, "%d;%d;%f;%f;%f;%f",
-                   &d, &a, &n1, &n2, &n3, &n4) == 6) {
-
-            if (d == id_disc && a == id_aluno) {
+                   &d, &a, &n1, &n2, &n3, &n4) == 6)
+        {
+            if (d == id_disc && a == id_aluno)
+            {
                 notas[0] = n1;
                 notas[1] = n2;
                 notas[2] = n3;
@@ -42,28 +35,42 @@ int carregar_notas(int id_disc, int id_aluno, float notas[4]) {
             }
         }
     }
+
     fclose(f);
-    return 0; 
+    return 0;
 }
 
-void lancar_nota() {
+//
+// ==================================================
+//  LANÇAR NOTA
+// ==================================================
+//
+
+void lancar_nota(int id_professor)
+{
     int id_disc, id_aluno, indice;
     float notas[4] = { -1, -1, -1, -1 };
 
     printf("\n=== Lancar Nota ===\n");
-    printf("ID da disciplina: ");
+    listar_disciplinas_professor(id_professor);
+    printf("\n[0] Para Cancelar a qualquer momento\n");
+    printf("\nID da disciplina: ");
     scanf("%d", &id_disc); getchar();
+    if(id_disc == 0) return;
 
     printf("ID do aluno: ");
     scanf("%d", &id_aluno); getchar();
+    if(id_aluno == 0) return;
 
     carregar_notas(id_disc, id_aluno, notas);
 
-    printf("\nQual nota alterar? (1 a 4): ");
+    printf("\nQual nota deseja alterar? (1 a 4): ");
     scanf("%d", &indice); getchar();
+    if(indice == 0) return;
     indice--;
 
-    if (indice < 0 || indice > 3) {
+    if (indice < 0 || indice > 3)
+    {
         printf("Indice invalido.\n");
         return;
     }
@@ -71,39 +78,44 @@ void lancar_nota() {
     printf("Digite a nova nota: ");
     scanf("%f", &notas[indice]); getchar();
 
-    char temp_path[100];
-    snprintf(temp_path, sizeof(temp_path), "data/temp_notas.txt");
+    char temp_path[] = "data/temp_notas.txt";
 
     FILE *orig = fopen(ARQ_NOTAS, "r");
     FILE *temp = fopen(temp_path, "w");
 
-    if (!temp) { printf("Erro ao abrir arquivo temporario.\n"); return; }
+    if (!temp)
+    {
+        printf("Erro ao abrir arquivo temporario.\n");
+        return;
+    }
 
     char linha[200];
     int d, a;
     float n1, n2, n3, n4;
     int atualizado = 0;
 
-    if (orig) {
-        while (fgets(linha, sizeof(linha), orig)) {
+    if (orig)
+    {
+        while (fgets(linha, sizeof(linha), orig))
+        {
             if (sscanf(linha, "%d;%d;%f;%f;%f;%f",
-                       &d, &a, &n1, &n2, &n3, &n4) == 6
-                && d == id_disc && a == id_aluno) {
-
+                       &d, &a, &n1, &n2, &n3, &n4) == 6 &&
+                d == id_disc && a == id_aluno)
+            {
                 fprintf(temp, "%d;%d;%.2f;%.2f;%.2f;%.2f\n",
-                        id_disc, id_aluno,
-                        notas[0], notas[1], notas[2], notas[3]);
-
+                        d, a, notas[0], notas[1], notas[2], notas[3]);
                 atualizado = 1;
             }
-            else {
+            else
+            {
                 fputs(linha, temp);
             }
         }
         fclose(orig);
     }
 
-    if (!atualizado) {
+    if (!atualizado)
+    {
         fprintf(temp, "%d;%d;%.2f;%.2f;%.2f;%.2f\n",
                 id_disc, id_aluno,
                 notas[0], notas[1], notas[2], notas[3]);
@@ -117,19 +129,30 @@ void lancar_nota() {
     printf("\nNota registrada com sucesso!\n");
 }
 
+//
+// ==================================================
+//  EDITAR NOTA
+// ==================================================
+//
 
-void editar_nota() {
+void editar_nota(int id_professor)
+{
     int id_disc, id_aluno, indice;
     float notas[4];
 
     printf("\n=== Editar Nota ===\n");
-    printf("ID da disciplina: ");
+    listar_disciplinas_professor(id_professor);
+    printf("\n[0] Para Cancelar a qualquer momento\n");
+    printf("\nID da disciplina: ");
     scanf("%d", &id_disc); getchar();
+    if(id_disc == 0) return;
 
     printf("ID do aluno: ");
     scanf("%d", &id_aluno); getchar();
+    if(id_aluno == 0) return;
 
-    if (!carregar_notas(id_disc, id_aluno, notas)) {
+    if (!carregar_notas(id_disc, id_aluno, notas))
+    {
         printf("Registro nao encontrado.\n");
         return;
     }
@@ -138,11 +161,12 @@ void editar_nota() {
     for (int i = 0; i < 4; i++)
         printf("Nota %d: %.2f\n", i + 1, notas[i]);
 
-    printf("\nQual nota deseja alterar (1 a 4)? ");
+    printf("\nQual nota alterar (1 a 4)? ");
     scanf("%d", &indice); getchar();
-    indice--;
 
-    if (indice < 0 || indice > 3) {
+    indice--;
+    if (indice < 0 || indice > 3)
+    {
         printf("Indice invalido.\n");
         return;
     }
@@ -150,37 +174,52 @@ void editar_nota() {
     printf("Nova nota: ");
     scanf("%f", &notas[indice]); getchar();
 
-    char temp_path[100];
-    snprintf(temp_path, sizeof(temp_path), "data/temp_notas.txt");
+    char temp_path[] = "data/temp_notas.txt";
 
     FILE *orig = fopen(ARQ_NOTAS, "r");
     FILE *temp = fopen(temp_path, "w");
+
+    if (!orig || !temp)
+    {
+        printf("Erro ao abrir arquivos.\n");
+        if (orig) fclose(orig);
+        if (temp) fclose(temp);
+        return;
+    }
 
     char linha[200];
     int d, a;
     float n1, n2, n3, n4;
 
-    while (fgets(linha, sizeof(linha), orig)) {
+    while (fgets(linha, sizeof(linha), orig))
+    {
         if (sscanf(linha, "%d;%d;%f;%f;%f;%f",
-                   &d, &a, &n1, &n2, &n3, &n4) == 6
-            && d == id_disc && a == id_aluno) {
-
+                   &d, &a, &n1, &n2, &n3, &n4) == 6 &&
+            d == id_disc && a == id_aluno)
+        {
             fprintf(temp, "%d;%d;%.2f;%.2f;%.2f;%.2f\n",
-                    id_disc, id_aluno,
-                    notas[0], notas[1], notas[2], notas[3]);
+                    d, a, notas[0], notas[1], notas[2], notas[3]);
         }
-        else {
+        else
+        {
             fputs(linha, temp);
         }
     }
 
     fclose(orig);
     fclose(temp);
+
     remove(ARQ_NOTAS);
     rename(temp_path, ARQ_NOTAS);
 
     printf("\nNota atualizada!\n");
 }
+
+//
+// ==================================================
+//  CONSULTAR NOTAS DO ALUNO
+// ==================================================
+//
 
 void consultar_notas_aluno(int id_aluno)
 {
@@ -194,67 +233,55 @@ void consultar_notas_aluno(int id_aluno)
     char linha[256];
     int d, a;
     float n1, n2, n3, n4;
-    int achou = 0;
+    int encontrou = 0;
 
     printf("\n=== MINHAS NOTAS ===\n");
 
     while (fgets(linha, sizeof(linha), f))
     {
         if (sscanf(linha, "%d;%d;%f;%f;%f;%f",
-                   &d, &a, &n1, &n2, &n3, &n4) == 6)
+                   &d, &a, &n1, &n2, &n3, &n4) == 6 &&
+            a == id_aluno)
         {
-            if (a == id_aluno)
-            {
-                achou = 1;
+            encontrou = 1;
 
-                printf("\nDisciplina %d:\n", d);
+            printf("\nDisciplina %d:\n", d);
 
-                printf("  Nota 1: ");
-                if (n1 < 0) printf("--\n");
-                else        printf("%.2f\n", n1);
-
-                printf("  Nota 2: ");
-                if (n2 < 0) printf("--\n");
-                else        printf("%.2f\n", n2);
-
-                printf("  Nota 3: ");
-                if (n3 < 0) printf("--\n");
-                else        printf("%.2f\n", n3);
-
-                printf("  Nota 4: ");
-                if (n4 < 0) printf("--\n");
-                else        printf("%.2f\n", n4);
-            }
+            printf("  Nota 1: %s%.2f\n",  n1 < 0 ? "-- " : "", n1 >= 0 ? n1 : 0);
+            printf("  Nota 2: %s%.2f\n",  n2 < 0 ? "-- " : "", n2 >= 0 ? n2 : 0);
+            printf("  Nota 3: %s%.2f\n",  n3 < 0 ? "-- " : "", n3 >= 0 ? n3 : 0);
+            printf("  Nota 4: %s%.2f\n",  n4 < 0 ? "-- " : "", n4 >= 0 ? n4 : 0);
         }
     }
 
     fclose(f);
 
-    if (!achou)
-    {
+    if (!encontrou)
         printf("Nenhuma nota registrada para voce.\n");
-    }
 }
 
-
 //
-// =====================  FUNÇÕES DE FALTAS  =====================
+// ==================================================
+//  CARREGAR FALTAS
+// ==================================================
 //
 
-int carregar_faltas(int id_disc, int id_aluno, int *faltas) {
+int carregar_faltas(int id_disc, int id_aluno, int *faltas)
+{
     FILE *f = fopen(ARQ_FALTAS, "r");
     if (!f) return 0;
 
     char linha[200];
     int d, a, f2;
 
-    while (fgets(linha, sizeof(linha), f)) {
-        if (sscanf(linha, "%d;%d;%d", &d, &a, &f2) == 3) {
-            if (d == id_disc && a == id_aluno) {
-                *faltas = f2;
-                fclose(f);
-                return 1;
-            }
+    while (fgets(linha, sizeof(linha), f))
+    {
+        if (sscanf(linha, "%d;%d;%d", &d, &a, &f2) == 3 &&
+            d == id_disc && a == id_aluno)
+        {
+            *faltas = f2;
+            fclose(f);
+            return 1;
         }
     }
 
@@ -262,15 +289,26 @@ int carregar_faltas(int id_disc, int id_aluno, int *faltas) {
     return 0;
 }
 
-void lancar_falta() {
+//
+// ==================================================
+//  LANÇAR FALTA
+// ==================================================
+//
+
+void lancar_falta(int id_professor)
+{
     int id_disc, id_aluno, novas, faltas;
 
     printf("\n=== Lancar Falta ===\n");
-    printf("ID da disciplina: ");
+    listar_disciplinas_professor(id_professor);
+    printf("\n[0] Para Cancelar a qualquer momento\n");
+    printf("\nID da disciplina: ");
     scanf("%d", &id_disc); getchar();
+    if(id_disc == 0) return;
 
     printf("ID do aluno: ");
     scanf("%d", &id_aluno); getchar();
+    if(id_aluno == 0) return;
 
     printf("Quantidade de faltas a adicionar: ");
     scanf("%d", &novas); getchar();
@@ -280,21 +318,28 @@ void lancar_falta() {
 
     faltas += novas;
 
-    char temp_path[100];
-    snprintf(temp_path, sizeof(temp_path), "data/temp_faltas.txt");
+    char temp_path[] = "data/temp_faltas.txt";
 
     FILE *orig = fopen(ARQ_FALTAS, "r");
     FILE *temp = fopen(temp_path, "w");
+
+    if (!temp)
+    {
+        printf("Erro ao abrir arquivo temporario.\n");
+        return;
+    }
 
     char linha[200];
     int d, a, f2;
     int atualizado = 0;
 
-    if (orig) {
-        while (fgets(linha, sizeof(linha), orig)) {
+    if (orig)
+    {
+        while (fgets(linha, sizeof(linha), orig))
+        {
             if (sscanf(linha, "%d;%d;%d", &d, &a, &f2) == 3 &&
-                d == id_disc && a == id_aluno) {
-
+                d == id_disc && a == id_aluno)
+            {
                 fprintf(temp, "%d;%d;%d\n", id_disc, id_aluno, faltas);
                 atualizado = 1;
             }
@@ -303,29 +348,42 @@ void lancar_falta() {
         fclose(orig);
     }
 
-    if (!atualizado) {
+    if (!atualizado)
+    {
         fprintf(temp, "%d;%d;%d\n", id_disc, id_aluno, faltas);
     }
 
     fclose(temp);
+
     remove(ARQ_FALTAS);
     rename(temp_path, ARQ_FALTAS);
 
     printf("\nFaltas registradas!\n");
 }
 
+//
+// ==================================================
+//  EDITAR FALTAS
+// ==================================================
+//
 
-void editar_falta() {
+void editar_falta(int id_professor)
+{
     int id_disc, id_aluno, faltas;
 
     printf("\n=== Editar Faltas ===\n");
-    printf("ID da disciplina: ");
+    listar_disciplinas_professor(id_professor);
+    printf("\n[0] Para Cancelar a qualquer momento\n");
+    printf("\nID da disciplina: ");;
     scanf("%d", &id_disc); getchar();
+    if(id_disc == 0) return;
 
     printf("ID do aluno: ");
     scanf("%d", &id_aluno); getchar();
+    if(id_aluno == 0) return;
 
-    if (!carregar_faltas(id_disc, id_aluno, &faltas)) {
+    if (!carregar_faltas(id_disc, id_aluno, &faltas))
+    {
         printf("Registro nao encontrado.\n");
         return;
     }
@@ -334,31 +392,49 @@ void editar_falta() {
     printf("Novo total de faltas: ");
     scanf("%d", &faltas); getchar();
 
-    char temp_path[100];
-    snprintf(temp_path, sizeof(temp_path), "data/temp_faltas.txt");
+    char temp_path[] = "data/temp_faltas.txt";
 
     FILE *orig = fopen(ARQ_FALTAS, "r");
     FILE *temp = fopen(temp_path, "w");
 
+    if (!orig || !temp)
+    {
+        printf("Erro ao abrir arquivos.\n");
+        if (orig) fclose(orig);
+        if (temp) fclose(temp);
+        return;
+    }
+
     char linha[200];
     int d, a, f2;
 
-    while (fgets(linha, sizeof(linha), orig)) {
+    while (fgets(linha, sizeof(linha), orig))
+    {
         if (sscanf(linha, "%d;%d;%d", &d, &a, &f2) == 3 &&
-            d == id_disc && a == id_aluno) {
-
-            fprintf(temp, "%d;%d;%d\n", id_disc, id_aluno, faltas);
+            d == id_disc && a == id_aluno)
+        {
+            fprintf(temp, "%d;%d;%d\n", d, a, faltas);
         }
-        else fputs(linha, temp);
+        else
+        {
+            fputs(linha, temp);
+        }
     }
 
     fclose(orig);
     fclose(temp);
+
     remove(ARQ_FALTAS);
     rename(temp_path, ARQ_FALTAS);
 
     printf("\nFaltas atualizadas!\n");
 }
+
+//
+// ==================================================
+//  CONSULTAR FALTAS DO ALUNO
+// ==================================================
+//
 
 void consultar_faltas_aluno(int id_aluno)
 {
@@ -377,20 +453,16 @@ void consultar_faltas_aluno(int id_aluno)
 
     while (fgets(linha, sizeof(linha), f))
     {
-        if (sscanf(linha, "%d;%d;%d", &d, &a, &faltas) == 3)
+        if (sscanf(linha, "%d;%d;%d", &d, &a, &faltas) == 3 &&
+            a == id_aluno)
         {
-            if (a == id_aluno)
-            {
-                printf("Disciplina %d: %d faltas\n", d, faltas);
-                achou = 1;
-            }
+            printf("Disciplina %d: %d faltas\n", d, faltas);
+            achou = 1;
         }
     }
 
     fclose(f);
 
     if (!achou)
-    {
         printf("Nenhuma falta registrada para voce.\n");
-    }
 }
